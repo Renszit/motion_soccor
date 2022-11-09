@@ -1,17 +1,25 @@
-import { StyleSheet } from "react-native";
-import { Accelerometer, DeviceMotion } from "expo-sensors";
-import EditScreenInfo from "../components/EditScreenInfo";
-import { Text, View } from "../components/Themed";
+import { Accelerometer } from "expo-sensors";
 import { useEffect, useState } from "react";
+import { StyleSheet } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from "react-native-reanimated";
+
+import { View } from "../components/Themed";
+import Goal from "./soccerfield/Goal";
+import RandomizedPlayers from "./soccerfield/RandomizedPlayers";
+
+export const BALL_SIZE = 30;
 
 export default function TabTwoScreen() {
   const [{ x, y, z }, setData] = useState({ x: 0, y: 0, z: 0 });
   const [subscription, setSubscription] = useState(null);
-  const [ballPosition, setBallPosition] = useState({ x: 0, y: 0 });
   const [screenCenter, setScreenCenter] = useState({ x: 0, y: 0 });
   const [screenBounds, setScreenBounds] = useState({ x: 0, y: 0 });
 
-  const BALL_SIZE = 30;
   const getCenterOfScreen = (layout) => {
     setScreenBounds({
       x: layout?.nativeEvent?.layout?.width,
@@ -21,6 +29,23 @@ export default function TabTwoScreen() {
       x: layout?.nativeEvent?.layout?.width / 2,
       y: layout?.nativeEvent?.layout?.height / 2,
     });
+  };
+
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+      ],
+    };
+  });
+
+  const config = {
+    duration: 100,
+    easing: Easing.ease,
   };
 
   const _subscribe = () => {
@@ -36,47 +61,66 @@ export default function TabTwoScreen() {
     const horizontalScreenMax = screenBounds.x - BALL_SIZE;
     const verticalScreenMax = screenBounds.y - BALL_SIZE;
 
-    setBallPosition({
-      x: Math.min(horizontalScreenMax, Math.max(0, ballPosition.x + x * 100)),
-      y: Math.min(verticalScreenMax, Math.max(0, ballPosition.y - y * 100)),
-    });
+    translateX.value = withTiming(
+      Math.min(
+        horizontalScreenMax / 2,
+        Math.max(-horizontalScreenMax / 2, translateX.value + x * 100)
+      ),
+      config
+    );
+        console.log("vertical screen max", verticalScreenMax)
+    translateY.value = withTiming(
+      Math.min(
+        verticalScreenMax + BALL_SIZE,
+        Math.max(-verticalScreenMax / 2 - BALL_SIZE, translateY.value - y * 100)
+      ),
+      config
+    );
   };
 
   useEffect(() => {
     measureBallPosition();
-  }, [x, y, z]);
+  }, [x, y]);
 
   useEffect(() => {
     _subscribe();
     return () => _unsubscribe();
   }, []);
 
-  const ballLeft = ballPosition.x;
-  const topPos = ballPosition.y;
+  const ballX = screenCenter.x + translateX.value;
+  const ballY = screenCenter.y + translateY.value;
 
   return (
     <View style={styles.container}>
       <View
         onLayout={(layout) => getCenterOfScreen(layout)}
-        style={{ flex: 1, width: "80%", height: "80%", borderWidth: 1 }}
+        style={{
+          justifyContent: "space-between",
+          flex: 1,
+          width: "90%",
+          height: "90%",
+          alignItems: "center",
+          borderWidth: 1,
+        }}
       >
-        <Text>Accelerometer:</Text>
-        <Text>x:{Math.round(x)}</Text>
-        <Text>y:{Math.round(y)}</Text>
-        <Text>z:{Math.round(z)}</Text>
-        <View
+        <Goal />
+        <RandomizedPlayers
+          screenBounds={screenBounds}
+          ballLocation={{ x: ballX, y: ballY }}
+        />
+
+        <Animated.View
           style={[
             styles.ball,
+            animatedStyle,
             {
               width: BALL_SIZE,
               height: BALL_SIZE,
               borderRadius: BALL_SIZE / 2,
-              position: "absolute",
-              left: ballLeft,
-              top: topPos,
             },
           ]}
-        ></View>
+        ></Animated.View>
+        <Goal />
       </View>
     </View>
   );
