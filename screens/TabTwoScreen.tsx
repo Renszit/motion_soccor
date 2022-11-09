@@ -1,6 +1,6 @@
 import { Accelerometer } from "expo-sensors";
 import { useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -68,17 +68,31 @@ export default function TabTwoScreen() {
       ),
       config
     );
-        console.log("vertical screen max", verticalScreenMax)
     translateY.value = withTiming(
       Math.min(
-        verticalScreenMax + BALL_SIZE,
-        Math.max(-verticalScreenMax / 2 - BALL_SIZE, translateY.value - y * 100)
+        0 + BALL_SIZE,
+        Math.max(
+          -verticalScreenMax + BALL_SIZE - 10,
+          translateY.value - y * 100
+        )
       ),
       config
     );
   };
 
+  const [initialBallLocation, setInitialBallLocation] = useState({
+    x: 0,
+    y: 0,
+  });
+  const getBallLocation = (ev) => {
+    setInitialBallLocation({
+      x: ev.nativeEvent.layout.x,
+      y: ev.nativeEvent.layout.y,
+    });
+  };
+
   useEffect(() => {
+    isBallInGoal();
     measureBallPosition();
   }, [x, y]);
 
@@ -87,8 +101,11 @@ export default function TabTwoScreen() {
     return () => _unsubscribe();
   }, []);
 
-  const ballX = screenCenter.x + translateX.value;
-  const ballY = screenCenter.y + translateY.value;
+  const ballX = screenBounds.x + translateX.value;
+  const ballY = screenBounds.y + translateY.value;
+
+  //150 width
+  //20 height
 
   return (
     <View style={styles.container}>
@@ -104,12 +121,14 @@ export default function TabTwoScreen() {
         }}
       >
         <Goal />
+
         <RandomizedPlayers
           screenBounds={screenBounds}
           ballLocation={{ x: ballX, y: ballY }}
         />
 
         <Animated.View
+          onLayout={(e) => getBallLocation(e)}
           style={[
             styles.ball,
             animatedStyle,

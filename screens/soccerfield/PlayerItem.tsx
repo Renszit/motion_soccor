@@ -1,5 +1,5 @@
 import { View, Text, Easing } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -8,10 +8,10 @@ import Animated, {
 import { BALL_SIZE } from "../TabTwoScreen";
 
 export default function PlayerItem({ item, ballLocation, screenBounds }) {
-  console.log(ballLocation, screenBounds);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-
+  const [playerLocation, setPlayerLocation] = useState();
+  //   console.log(playerLocation);
   const horizontalScreenMax = screenBounds.x - BALL_SIZE;
   const verticalScreenMax = screenBounds.y - BALL_SIZE;
 
@@ -37,7 +37,24 @@ export default function PlayerItem({ item, ballLocation, screenBounds }) {
     return () => clearInterval(interval);
   }, []);
 
-  
+  useEffect(() => {
+    checkIfBallIsTouchingPlayer();
+  }, [ballLocation]);
+
+  const checkIfBallIsTouchingPlayer = () => {
+    const ballX = Math.round(ballLocation.x);
+    const ballY = Math.round(ballLocation.y);
+    const playerX = Math.round(translateX.value);
+    const playerY = Math.round(translateY.value);
+  };
+
+  const getPlayerLocation = (e) => {
+    console.log("e", e.target);
+    setPlayerLocation({
+      x: e.nativeEvent.layout.x,
+      y: e.nativeEvent.layout.y,
+    });
+  };
 
   return (
     <View
@@ -51,6 +68,9 @@ export default function PlayerItem({ item, ballLocation, screenBounds }) {
       }}
     >
       <Animated.View
+        onLayout={(event) => {
+          getPlayerLocation(event);
+        }}
         style={[
           {
             height: 40,
