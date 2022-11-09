@@ -92,7 +92,6 @@ export default function TabTwoScreen() {
   };
 
   useEffect(() => {
-    isBallInGoal();
     measureBallPosition();
   }, [x, y]);
 
