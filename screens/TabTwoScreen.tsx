@@ -78,6 +78,23 @@ export default function TabTwoScreen() {
       ),
       config
     );
+
+    if (translateY.value < -verticalScreenMax + BALL_SIZE) {
+      const goalwidth = horizontalScreenMax / 2;
+      const goalHeight = 20;
+      const margin = (horizontalScreenMax - goalwidth) / 2;
+      console.log("translate x", translateX.value);
+
+      if (Math.abs(translateX.value) < goalwidth / 2) {
+        alert("GOAL!");
+        resetGame();
+      }
+    }
+  };
+
+  const resetGame = () => {
+    translateX.value = withTiming(0, config);
+    translateY.value = withTiming(0, config);
   };
 
   const [initialBallLocation, setInitialBallLocation] = useState({
@@ -102,9 +119,6 @@ export default function TabTwoScreen() {
 
   const ballX = screenBounds.x + translateX.value;
   const ballY = screenBounds.y + translateY.value;
-
-  //150 width
-  //20 height
 
   return (
     <View style={styles.container}>

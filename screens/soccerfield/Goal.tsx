@@ -11,7 +11,7 @@ export default function Goal() {
 
 const styles = StyleSheet.create({
   container: {
-    width: 150,
+    width: "50%",
     height: 20,
     alignItems: "center",
     justifyContent: "center",
