@@ -1,6 +1,12 @@
 import { Accelerometer } from "expo-sensors";
 import { useEffect, useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import {
+  ImageBackground,
+  TouchableOpacity,
+  StyleSheet,
+  View,
+  Image,
+} from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -8,9 +14,11 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 
-import { View } from "../components/Themed";
+import { SoccerField } from "./soccerfield/FieldBackground";
 import Goal from "./soccerfield/Goal";
 import RandomizedPlayers from "./soccerfield/RandomizedPlayers";
+import SoccerFieldImage from "../assets/images/field.png";
+import SoccerBallImage from "../assets/images/soccer-ball-no-transparency.png";
 
 export const BALL_SIZE = 30;
 
@@ -48,6 +56,7 @@ export default function TabTwoScreen() {
     easing: Easing.ease,
   };
 
+  const [score, setScore] = useState(0);
   const _subscribe = () => {
     setSubscription(Accelerometer.addListener((acc) => setData(acc)));
   };
@@ -56,6 +65,10 @@ export default function TabTwoScreen() {
     subscription && subscription.remove();
     setSubscription(null);
   };
+
+  useEffect(() => {
+    if (score !== 0) alert("GOAL! " + score + " - 0");
+  }, [score]);
 
   const measureBallPosition = () => {
     const horizontalScreenMax = screenBounds.x - BALL_SIZE;
@@ -83,10 +96,9 @@ export default function TabTwoScreen() {
       const goalwidth = horizontalScreenMax / 2;
       const goalHeight = 20;
       const margin = (horizontalScreenMax - goalwidth) / 2;
-      console.log("translate x", translateX.value);
 
       if (Math.abs(translateX.value) < goalwidth / 2) {
-        alert("GOAL!");
+        setScore(score + 1);
         resetGame();
       }
     }
@@ -124,35 +136,31 @@ export default function TabTwoScreen() {
     <View style={styles.container}>
       <View
         onLayout={(layout) => getCenterOfScreen(layout)}
-        style={{
-          justifyContent: "space-between",
-          flex: 1,
-          width: "90%",
-          height: "90%",
-          alignItems: "center",
-          borderWidth: 1,
-        }}
+        style={styles.actionArea}
       >
-        <Goal />
+        <ImageBackground
+          source={SoccerFieldImage}
+          onLayout={(layout) => getCenterOfScreen(layout)}
+          resizeMode="cover"
+          style={styles.soccerField}
+        >
+          <Goal />
+          <RandomizedPlayers
+            screenBounds={screenBounds}
+            ballLocation={{ x: ballX, y: ballY }}
+          />
 
-        <RandomizedPlayers
-          screenBounds={screenBounds}
-          ballLocation={{ x: ballX, y: ballY }}
-        />
-
-        <Animated.View
-          onLayout={(e) => getBallLocation(e)}
-          style={[
-            styles.ball,
-            animatedStyle,
-            {
-              width: BALL_SIZE,
-              height: BALL_SIZE,
-              borderRadius: BALL_SIZE / 2,
-            },
-          ]}
-        ></Animated.View>
-        <Goal />
+          <Animated.View
+            onLayout={(e) => getBallLocation(e)}
+            style={[animatedStyle]}
+          >
+            <Image
+              source={SoccerBallImage}
+              style={{ height: BALL_SIZE, width: BALL_SIZE }}
+            />
+          </Animated.View>
+          <Goal />
+        </ImageBackground>
       </View>
     </View>
   );
@@ -161,7 +169,7 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
+    backgroundColor: "black",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -169,12 +177,24 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-  ball: {
-    backgroundColor: "red",
-  },
   separator: {
     marginVertical: 30,
     height: 1,
     width: "80%",
+  },
+  soccerField: {
+    justifyContent: "space-between",
+    alignItems: "center",
+    flex: 1,
+    height: "100%",
+    width: "100%",
+  },
+  actionArea: {
+    justifyContent: "space-between",
+    flex: 1,
+    width: "100%",
+    height: "90%",
+    alignItems: "center",
+    borderWidth: 1,
   },
 });

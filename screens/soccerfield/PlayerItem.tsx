@@ -10,6 +10,8 @@ import { BALL_SIZE } from "../TabTwoScreen";
 export default function PlayerItem({ item, ballLocation, screenBounds }) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
+  const initialX = useSharedValue(0);
+  const initialZ = useSharedValue(0);
   const [playerLocation, setPlayerLocation] = useState();
   //   console.log(playerLocation);
   const horizontalScreenMax = screenBounds.x - BALL_SIZE;
@@ -49,7 +51,7 @@ export default function PlayerItem({ item, ballLocation, screenBounds }) {
   };
 
   const getPlayerLocation = (e) => {
-    console.log("e", e.target);
+    console.log("e", e.target.nativeEvent);
     setPlayerLocation({
       x: e.nativeEvent.layout.x,
       y: e.nativeEvent.layout.y,
@@ -58,6 +60,9 @@ export default function PlayerItem({ item, ballLocation, screenBounds }) {
 
   return (
     <View
+      onLayout={(event) => {
+        console.log("VIEW event.nativeEvent", event.nativeEvent);
+      }}
       key={item}
       style={{
         margin: 20,
@@ -78,6 +83,8 @@ export default function PlayerItem({ item, ballLocation, screenBounds }) {
             alignItems: "center",
             justifyContent: "center",
             borderRadius: 20,
+            borderColor: "white",
+            borderWidth: 1,
             margin: 30,
             backgroundColor: "black",
           },

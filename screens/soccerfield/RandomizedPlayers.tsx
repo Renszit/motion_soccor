@@ -9,7 +9,7 @@ import Animated, {
 import PlayerItem from "./PlayerItem";
 
 export default function RandomizedPlayers({ ballLocation, screenBounds }) {
-  const AMOUNTOFPLAYERS = 5;
+  const AMOUNTOFPLAYERS = 7;
   const [players, setPlayers] = React.useState([]);
   const getPlayerArray = () => {
     const playerArray = [];
